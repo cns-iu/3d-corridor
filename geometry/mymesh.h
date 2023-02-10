@@ -36,6 +36,7 @@ class Mymesh{
         Mymesh(){};
         Mymesh(const std::string &file_path);
         Mymesh(const Surface_mesh sm);
+        Mymesh(double c_x, double c_y, double c_z, double d_x, double d_y, double d_z);
 
         ~Mymesh(){};
 

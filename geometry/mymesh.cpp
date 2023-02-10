@@ -97,6 +97,41 @@ Mymesh::Mymesh(const Surface_mesh sm)
     triangulate_mesh();    
 }
 
+Mymesh::Mymesh(double center_x, double center_y, double center_z, double dimension_x, double dimension_y, double dimension_z)
+{
+    double min_x = center_x - dimension_x/2, min_y = center_y - dimension_y/2, min_z = center_z - dimension_z/2;
+    double max_x = center_x + dimension_x/2, max_y = center_y + dimension_y/2, max_z = center_z + dimension_z/2;
+
+    Point v000(min_x, min_y, min_z);
+    Point v100(max_x, min_y, min_z);
+    Point v010(min_x, max_y, min_z);
+    Point v001(min_x, min_y, max_z);
+    Point v110(max_x, max_y, min_z);
+    Point v101(max_x, min_y, max_z);
+    Point v011(min_x, max_y, max_z);
+    Point v111(max_x, max_y, max_z);
+
+    std::vector<Point> vertices = {v000, v100, v110, v010, v001, v101, v111, v011};
+    std::vector<vertex_descriptor> vd;
+
+    Surface_mesh tissue_mesh;
+    for (auto &p: vertices)
+    {
+        vertex_descriptor u = tissue_mesh.add_vertex(p);
+        vd.push_back(u);
+    } 
+
+    tissue_mesh.add_face(vd[3], vd[2], vd[1], vd[0]);
+    tissue_mesh.add_face(vd[4], vd[5], vd[6], vd[7]);
+    tissue_mesh.add_face(vd[4], vd[7], vd[3], vd[0]);
+    tissue_mesh.add_face(vd[1], vd[2], vd[6], vd[5]);
+    tissue_mesh.add_face(vd[0], vd[1], vd[5], vd[4]);
+    tissue_mesh.add_face(vd[2], vd[3], vd[7], vd[6]);
+
+    this->mesh = tissue_mesh;
+    triangulate_mesh();
+}
+
 std::string Mymesh::to_wkt() 
 {
     std::stringstream ss;

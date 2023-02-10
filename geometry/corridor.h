@@ -2,8 +2,9 @@
 
 #include "algo.h"
 #include "utils.h"
+#include <cmath>
 
-class Mytissue {
+class Mytissue: public Mymesh {
 
     public:
         Mytissue() = default;
@@ -11,18 +12,21 @@ class Mytissue {
         
         double center_x, center_y, center_z;
         double dimension_x, dimension_y, dimension_z;
-
-        double compute_intersection_volume(Mymesh &mesh);
+    
+    public:
+        std::vector<Point> &get_points();
     
     private:
-        std::vector<Point> &generate_points();
-        void create_mesh();
+        std::vector<Point> &generate_points(int resolution);
+        // Surface_mesh create_mesh();
 
     private:
-        Surface_mesh tissue_mesh;
         std::vector<Point> points;
 
-}
+
+};
 
 
-std::vector<Point> find_all_locations(Mymesh &my_mesh, Mytissue &example_tissue);
+std::vector<Point> find_all_locations(Mymesh &my_mesh, Mytissue &example_tissue, double intersection_percentage, double tolerance);
+
+double compute_intersection_volume(Mymesh &AS, Mytissue &tissue);

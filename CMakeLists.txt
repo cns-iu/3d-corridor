@@ -6,10 +6,13 @@ set(CMAKE_BUILD_TYPE "Release")
 
 # find packages
 find_package(CGAL REQUIRED)
+find_package (Eigen3 REQUIRED NO_MODULE)
+find_package(Boost 1.45.0 COMPONENTS filesystem)
+
 set(Boost_USE_STATIC_LIBS OFF) 
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.45.0 COMPONENTS filesystem)
+
 
 add_executable(corridor_generator main.cpp)
 file(GLOB GEOMETRY_SRC_FILES geometry/*.cpp)
@@ -20,11 +23,6 @@ target_link_libraries(geometry PUBLIC Eigen3::Eigen)
 target_link_libraries(corridor_generator Eigen3::Eigen)
 target_link_libraries(corridor_generator CGAL::CGAL)
 target_link_libraries(corridor_generator geometry)
-
-set(Boost_USE_STATIC_LIBS OFF) 
-set(Boost_USE_MULTITHREADED ON)  
-set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.45.0 COMPONENTS filesystem)
 
 if (Boost_FOUND)
     target_link_libraries(corridor_generator ${Boost_LIBRARIES})
