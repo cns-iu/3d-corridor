@@ -3,6 +3,9 @@ project(CORRIDOR)
 
 # set variables
 set(CMAKE_BUILD_TYPE "Release")
+set(CGAL_DIR "$ENV{HOME}/CGAL-5.5.1")
+
+ message("${CGAL_DIR}")
 
 # find packages
 find_package(CGAL REQUIRED)
@@ -18,6 +21,7 @@ add_executable(corridor_generator main.cpp)
 file(GLOB GEOMETRY_SRC_FILES geometry/*.cpp)
 add_library(geometry ${GEOMETRY_SRC_FILES})
 target_include_directories(geometry PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/geometry)
+target_link_libraries(geometry PUBLIC CGAL::CGAL)
 target_link_libraries(geometry PUBLIC Eigen3::Eigen)
 
 target_link_libraries(corridor_generator Eigen3::Eigen)

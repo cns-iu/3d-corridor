@@ -122,6 +122,128 @@ std::vector<Point> find_all_locations(Mymesh &my_mesh, Mytissue &example_tissue,
 
 }
 
+Surface_mesh create_corridor(std::vector<Mymesh> &meshes, Mytissue &example_tissue, std::vector<double> &intersection_percnts, double tolerance)
+{
+
+    std::vector<Point> point_cloud = create_point_cloud_corridor_for_multiple_AS(meshes, example_tissue, intersection_percnts, tolerance);
+    return create_corridor_from_point_cloud(point_cloud);
+
+}
+
+double generate_pertubation(double step)
+{
+    return step * ((double)rand()/RAND_MAX * 2.0 - 1.0);
+}
+
+std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymesh> &meshes, Mytissue &example_tissue, std::vector<double> &intersection_percnts, double tolerance)
+{
+
+    std::vector<Point> center_path;
+    std::vector<Point> point_cloud;
+
+    double intersect_x_min = -1e10, intersect_y_min = -1e10, intersect_z_min = -1e10;
+    double intersect_x_max = 1e10, intersect_y_max = 1e10, intersect_z_max = 1e10;  
+
+    double step_x = example_tissue.dimension_x / 4.9;
+    double step_y = example_tissue.dimension_y / 4.9;
+    double step_z = example_tissue.dimension_z / 4.9;
+
+    double example_d_x = example_tissue.dimension_x;
+    double example_d_y = example_tissue.dimension_y;
+    double example_d_z = example_tissue.dimension_z;
+
+    double tbv = example_d_x * example_d_y * example_d_z;
+
+    for (Mymesh &mesh: meshes)
+    {
+        CGAL::Bbox_3 bbox = PMP::bbox(mesh.get_raw_mesh());
+        intersect_x_min = std::max(intersect_x_min, bbox.xmin());
+        intersect_y_min = std::max(intersect_y_min, bbox.ymin());
+        intersect_z_min = std::max(intersect_z_min, bbox.zmin());
+
+        intersect_x_max = std::min(intersect_x_max, bbox.xmax());
+        intersect_y_max = std::min(intersect_y_max, bbox.ymax());
+        intersect_z_max = std::min(intersect_z_max, bbox.zmax());
+
+    }
+    std::cout << "min x, y, z: " << intersect_x_min << " " << intersect_y_min << " " << intersect_z_min << std::endl;
+    std::cout << "max x, y, z: " << intersect_x_max << " " << intersect_y_max << " " << intersect_z_max << std::endl;
+    std::cout << "step size: " << step_x << " " << step_y << " " << step_z << std::endl;
+
+    for (double c_x = intersect_x_min - example_d_x / 2; c_x < intersect_x_max + example_d_x / 2; c_x += step_x)
+        for (double c_y = intersect_y_min - example_d_y / 2; c_y < intersect_y_max + example_d_y / 2; c_y += step_y)
+            for (double c_z = intersect_z_min - example_d_z / 2; c_z < intersect_z_max + example_d_z / 2; c_z += step_z)
+            {
+                // std::cout << c_x << " " << c_y << " " << c_z << std::endl;
+                Mytissue cur_tissue(c_x, c_y, c_z, example_d_x, example_d_y, example_d_z);
+                
+                bool is_in_corridor = true;
+                for (int i = 0; i < meshes.size(); i++)
+                {
+                    Mymesh &mesh = meshes[i];
+                    double example_intersection_volume = tbv * intersection_percnts[i];
+
+                    double intersection_volume = compute_intersection_volume(mesh, cur_tissue);
+                    // std::cout << i << " example intersection volume: " << example_intersection_volume << " " << intersection_volume << std::endl;
+                    if (std::abs(intersection_volume - example_intersection_volume) > tolerance * example_intersection_volume)
+                    {
+                        is_in_corridor = false;
+                        break;
+                    }
+
+                }
+
+                if (is_in_corridor)
+                {
+                    center_path.push_back(Point(c_x, c_y, c_z));
+                    std::cout << generate_pertubation(step_x) << " " << generate_pertubation(step_y) << " " << generate_pertubation(step_z) << std::endl;
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
+
+                }
+
+            }
+
+
+    return point_cloud;
+
+}
+
+
+Surface_mesh create_corridor_from_point_cloud(std::vector<Point> &points)
+{
+      // Compute the alpha and offset values
+    const double relative_alpha = 10.;
+    const double relative_offset = 300.;
+    
+    CGAL::Bbox_3 bbox = CGAL::bbox_3(std::cbegin(points), std::cend(points));
+    const double diag_length = std::sqrt(CGAL::square(bbox.xmax() - bbox.xmin()) +
+                                        CGAL::square(bbox.ymax() - bbox.ymin()) +
+                                        CGAL::square(bbox.zmax() - bbox.zmin()));
+
+    const double alpha = diag_length / relative_alpha;
+    const double offset = diag_length / relative_offset;
+    std::cout << "absolute alpha = " << alpha << " absolute offset = " << offset << std::endl;
+    // Construct the wrap
+    CGAL::Real_timer t;
+    
+    t.start();
+    Surface_mesh wrap;
+    std::cout << "size of point cloud: " << points.size() << std::endl;
+    CGAL::alpha_wrap_3(points, alpha, offset, wrap);
+    t.stop();
+
+    return wrap;
+
+}
+
+
 // compute intersection volume between a mesh and an axis-aligned tissue 
 double compute_intersection_volume(Mymesh &AS, Mytissue &tissue)
 {

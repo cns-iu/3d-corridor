@@ -1,5 +1,8 @@
 #pragma once
 
+#include <CGAL/alpha_wrap_3.h>
+#include <CGAL/Real_timer.h>
+
 #include "algo.h"
 #include "utils.h"
 #include <cmath>
@@ -29,4 +32,12 @@ class Mytissue: public Mymesh {
 
 std::vector<Point> find_all_locations(Mymesh &my_mesh, Mytissue &example_tissue, double intersection_percentage, double tolerance);
 
+Surface_mesh create_corridor(std::vector<Mymesh> &meshes, Mytissue &example_tissue, std::vector<double> &intersection_percnts, double tolerance);
+
+std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymesh> &meshes, Mytissue &example_tissue, std::vector<double> &intersection_percnts, double tolerance);
+
+Surface_mesh create_corridor_from_point_cloud(std::vector<Point> &points);
+
 double compute_intersection_volume(Mymesh &AS, Mytissue &tissue);
+
+double generate_pertubation(double step);

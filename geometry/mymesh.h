@@ -1,8 +1,8 @@
 #ifndef MYMESH_H_
 #define MYMESH_H_
 
-#include<CGAL/Simple_cartesian.h>
-
+// #include<CGAL/Simple_cartesian.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include<CGAL/Surface_mesh.h>
 #include<CGAL/polygon_mesh_processing.h>
 #include<CGAL/AABB_face_graph_triangle_primitive.h>
@@ -12,7 +12,7 @@
 #include<vector>
 #include<boost/filesystem.hpp>
 
-typedef CGAL::Simple_cartesian<double> Kernel;
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 typedef Kernel::Point_3 Point;
 typedef Kernel::Triangle_3 Triangle;
 
