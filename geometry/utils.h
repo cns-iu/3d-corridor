@@ -39,3 +39,5 @@ void tissue_transform(std::unordered_map<std::string, double> &params, Surface_m
 std::string organ_split(const std::string &url);
 
 void load_ASCT_B(const std::string &file_path, std::unordered_map<std::string, std::string> &mapping, std::unordered_map<std::string, SpatialEntity> &mapping_node_spatial_entity);
+
+void output_corridor(Surface_mesh &mesh, std::string rui_location_id, std::string output_corridor_dir);

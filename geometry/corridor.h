@@ -34,7 +34,11 @@ std::vector<Point> find_all_locations(Mymesh &my_mesh, Mytissue &example_tissue,
 
 Surface_mesh create_corridor(std::vector<Mymesh> &meshes, Mytissue &example_tissue, std::vector<double> &intersection_percnts, double tolerance);
 
+Surface_mesh create_corridor(std::vector<Mymesh> &organ, Mytissue &example_tissue, std::vector<std::pair<int, double>> &result, double tolerance);
+
 std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymesh> &meshes, Mytissue &example_tissue, std::vector<double> &intersection_percnts, double tolerance);
+
+std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymesh> &organ, Mytissue &example_tissue, std::vector<std::pair<int, double>> &result, double tolerance);
 
 Surface_mesh create_corridor_from_point_cloud(std::vector<Point> &points);
 

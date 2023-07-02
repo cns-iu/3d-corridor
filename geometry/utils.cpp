@@ -282,3 +282,12 @@ std::string organ_split(const std::string &url)
     return url.substr(start);
 
 }
+
+void output_corridor(Surface_mesh &mesh, std::string rui_location_id, std::string output_corridor_dir)
+{
+    if (!fs::exists(output_corridor_dir)) fs::create_directory(output_corridor_dir);
+    size_t start = rui_location_id.find_last_of('/') + 1;
+    std::string abs_file_path = output_corridor_dir + '/' + rui_location_id.substr(start) + ".off";
+    CGAL::IO::write_polygon_mesh(abs_file_path, mesh, CGAL::parameters::stream_precision(17));            
+
+}
