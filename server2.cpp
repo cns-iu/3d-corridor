@@ -128,7 +128,7 @@ void parse_json(json::value const &jvalue, json::value &answer)
          //corridor generation based on collision detection result
          auto rui_location_id = jvalue.at("@id").as_string();
          std::string output_corridor_dir = "./corridor_models";
-         Mytissue example_tissue(0.0, 0.0, 0.0, params["x_dimension"], params["y_dimension"], params["z_dimension"]);
+         Mytissue example_tissue(0.0, 0.0, 0.0, params["x_dimension"]/1000.0, params["y_dimension"]/1000.0, params["z_dimension"]/1000.0);
          double tolerance = 0.1;
          
          if (result.size() > 3) {
