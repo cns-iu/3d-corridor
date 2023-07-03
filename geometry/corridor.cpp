@@ -152,9 +152,13 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
     double intersect_x_min = -1e10, intersect_y_min = -1e10, intersect_z_min = -1e10;
     double intersect_x_max = 1e10, intersect_y_max = 1e10, intersect_z_max = 1e10;  
 
-    double step_x = example_tissue.dimension_x / 4.9;
-    double step_y = example_tissue.dimension_y / 4.9;
-    double step_z = example_tissue.dimension_z / 4.9;
+    // double step_x = example_tissue.dimension_x / 4.9;
+    // double step_y = example_tissue.dimension_y / 4.9;
+    // double step_z = example_tissue.dimension_z / 4.9;
+
+    double step_x = 1.0;
+    double step_y = 1.0;
+    double step_z = 1.0;
 
     double example_d_x = example_tissue.dimension_x;
     double example_d_y = example_tissue.dimension_y;
@@ -233,9 +237,9 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
     double intersect_x_min = -1e10, intersect_y_min = -1e10, intersect_z_min = -1e10;
     double intersect_x_max = 1e10, intersect_y_max = 1e10, intersect_z_max = 1e10;  
 
-    double step_x = example_tissue.dimension_x / 4.9;
-    double step_y = example_tissue.dimension_y / 4.9;
-    double step_z = example_tissue.dimension_z / 4.9;
+    // double step_x = example_tissue.dimension_x / 4.9;
+    // double step_y = example_tissue.dimension_y / 4.9;
+    // double step_z = example_tissue.dimension_z / 4.9;
 
     double example_d_x = example_tissue.dimension_x;
     double example_d_y = example_tissue.dimension_y;
@@ -256,6 +260,10 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
         intersect_z_max = std::min(intersect_z_max, bbox.zmax());
     }
 
+    double step_x = (intersect_x_max - intersect_x_min + example_d_x) / 20.0;
+    double step_y = (intersect_y_max - intersect_y_min + example_d_y) / 20.0;
+    double step_z = (intersect_z_max - intersect_z_min + example_d_z) / 20.0;
+    
     std::cout << "min x, y, z: " << intersect_x_min << " " << intersect_y_min << " " << intersect_z_min << std::endl;
     std::cout << "max x, y, z: " << intersect_x_max << " " << intersect_y_max << " " << intersect_z_max << std::endl;
     std::cout << "step size: " << step_x << " " << step_y << " " << step_z << std::endl;
@@ -305,7 +313,13 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
 
 Surface_mesh create_corridor_from_point_cloud(std::vector<Point> &points)
 {
-      // Compute the alpha and offset values
+    Surface_mesh wrap;
+    
+    std::cout << "points size: " << points.size() << std::endl;
+    if (points.size() == 0)
+        return wrap;
+
+    // Compute the alpha and offset values
     const double relative_alpha = 10.;
     const double relative_offset = 300.;
     
@@ -321,7 +335,6 @@ Surface_mesh create_corridor_from_point_cloud(std::vector<Point> &points)
     CGAL::Real_timer t;
     
     t.start();
-    Surface_mesh wrap;
     std::cout << "size of point cloud: " << points.size() << std::endl;
     CGAL::alpha_wrap_3(points, alpha, offset, wrap);
     t.stop();
