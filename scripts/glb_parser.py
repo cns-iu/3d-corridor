@@ -67,16 +67,16 @@ def save_single_mesh(points, triangles, mesh_name, output_dir):
 
 
 if __name__ == "__main__":
-    input_dir = "../../ccf-releases/v1.3/models/"
-    output_dir = "../../models/plain"
+    # input_dir = "../../ccf-releases/v1.3/models/"
+    # output_dir = "../../models/plain"
 
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('input_dir')
-    # parser.add_argument('output_dir')
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input_dir', type=str, help="input directory of glb files", default="../../ccf-releases/v1.3/models/")
+    parser.add_argument('--output_dir', type=str, help="output directory of off files", default="../../models/plain")
+    args = parser.parse_args()
 
-    # input_dir = args.input_dir
-    # output_dir = args.output_dir
+    input_dir = args.input_dir
+    output_dir = args.output_dir
 
     files = os.listdir(input_dir)
     for f in files:
