@@ -11,6 +11,7 @@
 #include<iostream>
 #include<vector>
 #include<boost/filesystem.hpp>
+#include "omp.h"
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 typedef Kernel::Point_3 Point;

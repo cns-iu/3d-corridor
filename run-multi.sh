@@ -1,1 +1,1 @@
-./build/corridor_generator /home/catherine/data/model/plain_manifold_filling_hole_v1.3/VH_F_Kidney_L/VH_F_outer_cortex_of_kidney_L.off /home/catherine/data/model/plain_manifold_filling_hole_v1.3/VH_F_Kidney_L/VH_F_renal_pyramid_L_h.off 0.20;
+./build/corridor_generator /home/luchen/data/model/plain_manifold_filling_hole_v1.3/VH_F_Kidney_L/VH_F_outer_cortex_of_kidney_L.off /home/luchen/data/model/plain_manifold_filling_hole_v1.3/VH_F_Kidney_L/VH_F_renal_pyramid_L_h.off 0.20;
