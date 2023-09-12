@@ -129,10 +129,10 @@ void parse_json(json::value const &jvalue, json::value &answer)
          auto rui_location_id = jvalue.at("@id").as_string();
          std::string output_corridor_dir = "./corridor_models";
          Mytissue example_tissue(0.0, 0.0, 0.0, params["x_dimension"]/1000.0, params["y_dimension"]/1000.0, params["z_dimension"]/1000.0);
-         double tolerance = 0.1;
+         double tolerance = 0.2;
          
          if (result.size() > 3) {
-            output_corridor(tissue_mesh, rui_location_id, output_corridor_dir);
+            output_corridor(my_tissue.get_raw_mesh(), rui_location_id, output_corridor_dir);
          }
          else if (result.size() == 2 || result.size() == 3)
          {           
