@@ -261,15 +261,15 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
         intersect_z_max = std::min(intersect_z_max, bbox.zmax());
     }
 
-    double step_x = (intersect_x_max - intersect_x_min + example_d_x) / 20.0;
-    double step_y = (intersect_y_max - intersect_y_min + example_d_y) / 20.0;
-    double step_z = (intersect_z_max - intersect_z_min + example_d_z) / 20.0;
+    double step_x = (intersect_x_max - intersect_x_min + example_d_x) / 40.0;
+    double step_y = (intersect_y_max - intersect_y_min + example_d_y) / 40.0;
+    double step_z = (intersect_z_max - intersect_z_min + example_d_z) / 40.0;
     
     std::cout << "min x, y, z: " << intersect_x_min << " " << intersect_y_min << " " << intersect_z_min << std::endl;
     std::cout << "max x, y, z: " << intersect_x_max << " " << intersect_y_max << " " << intersect_z_max << std::endl;
     std::cout << "step size: " << step_x << " " << step_y << " " << step_z << std::endl;
 
-    #pragma omp parallel
+    
     for (double c_x = intersect_x_min - example_d_x / 2; c_x < intersect_x_max + example_d_x / 2; c_x += step_x)
         for (double c_y = intersect_y_min - example_d_y / 2; c_y < intersect_y_max + example_d_y / 2; c_y += step_y)
             for (double c_z = intersect_z_min - example_d_z / 2; c_z < intersect_z_max + example_d_z / 2; c_z += step_z)
