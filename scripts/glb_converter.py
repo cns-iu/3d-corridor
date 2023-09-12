@@ -1,3 +1,4 @@
+# Single mesh converter. Please refer to multi-LOD for the multi-mesh converter
 import argparse
 import os
 
@@ -54,7 +55,8 @@ def converter(points, triangles):
                     pygltflib.Primitive(
                         attributes=pygltflib.Attributes(POSITION=1), indices=0
                     )
-                ]
+                ],
+                name='corridor',
             )
         ],
         accessors=[
@@ -65,6 +67,7 @@ def converter(points, triangles):
                 type=pygltflib.SCALAR,
                 max=[int(triangles.max())],
                 min=[int(triangles.min())],
+                name='accessorIndices',
             ),
             pygltflib.Accessor(
                 bufferView=1,
@@ -73,6 +76,7 @@ def converter(points, triangles):
                 type=pygltflib.VEC3,
                 max=points.max(axis=0).tolist(),
                 min=points.min(axis=0).tolist(),
+                name='accessorPositions',
             ),
         ],
         bufferViews=[
@@ -121,16 +125,16 @@ def generate_glbs(input_dir, output_dir):
 
 if __name__ == "__main__":
 
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('input_dir')
-    # parser.add_argument('output_dir')
-    # args = parser.parse_args()
-    #
-    # input_dir = args.input_dir
-    # output_dir = args.output_dir
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input_dir')
+    parser.add_argument('output_dir')
+    args = parser.parse_args()
+    
+    input_dir = args.input_dir
+    output_dir = args.output_dir
 
-    input_dir = '../corridor_models'
-    output_dir = '../corridor_models_glb'
+    # input_dir = '../corridor_models'
+    # output_dir = '../corridor_models_glb'
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
