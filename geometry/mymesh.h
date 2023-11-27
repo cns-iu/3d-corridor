@@ -45,6 +45,7 @@ class Mymesh{
         bool triangulate_mesh();
         bool point_inside(Point &query);
         double percentage_points_inside(std::vector<Point> &query);
+        double percentage_points_inside_serial(std::vector<Point> &query);
 
         void create_aabb_tree();
         Surface_mesh& get_raw_mesh();

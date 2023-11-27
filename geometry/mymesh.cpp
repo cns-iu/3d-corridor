@@ -1,4 +1,6 @@
 #include "mymesh.h"
+#include <omp.h>
+using namespace std;
 
 namespace PMP = CGAL::Polygon_mesh_processing;
 namespace fs = boost::filesystem;
@@ -58,10 +60,27 @@ double Mymesh::percentage_points_inside(std::vector<Point> &query)
     int cnt = 0;
     Point_inside inside_tester(*aabbTree);
 
-    // #pragma omp parallel for reduction(+:cnt)
+    #pragma omp parallel for reduction(+:cnt)
     for (auto &point: query)
         if (inside_tester(point) == CGAL::ON_BOUNDED_SIDE) cnt++;
     
+    double percentage = 1.0 * cnt / query.size();
+
+    return percentage;
+
+}
+
+
+double Mymesh::percentage_points_inside_serial(std::vector<Point> &query)
+{
+    int cnt = 0;
+    Point_inside inside_tester(*aabbTree);
+    //#pragma omp parallel for reduction(+:cnt)
+    for (auto &point: query){
+        if (inside_tester(point) == CGAL::ON_BOUNDED_SIDE) {
+            cnt++;
+        }
+    }
     double percentage = 1.0 * cnt / query.size();
 
     return percentage;

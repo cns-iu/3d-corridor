@@ -43,5 +43,6 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
 Surface_mesh create_corridor_from_point_cloud(std::vector<Point> &points);
 
 double compute_intersection_volume(Mymesh &AS, Mytissue &tissue);
+double compute_intersection_volume_serial(Mymesh &AS, Mytissue &tissue);
 
 double generate_pertubation(double step);

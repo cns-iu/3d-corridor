@@ -1,5 +1,10 @@
 #include "corridor.h"
-
+#include <cmath>
+#include <omp.h>
+#include <iostream>
+#include <sys/time.h>
+using namespace std;
+   
 
 Mytissue::Mytissue(double c_x, double c_y, double c_z, double d_x, double d_y, double d_z)
 :Mymesh(c_x, c_y, c_z, d_x, d_y, d_z),
@@ -17,43 +22,6 @@ std::vector<Point> &Mytissue::get_points()
     return this->points;
 }
 
-
-// Surface_mesh Mytissue::create_mesh()
-// {
-
-//     double min_x = center_x - dimension_x/2, min_y = center_y - dimension_y/2, min_z = center_z - dimension_z/2;
-//     double max_x = center_x + dimension_x/2, max_y = center_y + dimension_y/2, max_z = center_z + dimension_z/2;
-
-//     Point v000(min_x, min_y, min_z);
-//     Point v100(max_x, min_y, min_z);
-//     Point v010(min_x, max_y, min_z);
-//     Point v001(min_x, min_y, max_z);
-//     Point v110(max_x, max_y, min_z);
-//     Point v101(max_x, min_y, max_z);
-//     Point v011(min_x, max_y, max_z);
-//     Point v111(max_x, max_y, max_z);
-
-//     std::vector<Point> vertices = {v000, v100, v110, v010, v001, v101, v111, v011};
-//     std::vector<vertex_descriptor> vd;
-
-//     Surface_mesh tissue_mesh;
-//     for (auto &p: vertices)
-//     {
-//         vertex_descriptor u = tissue_mesh.add_vertex(p);
-//         vd.push_back(u);
-//     } 
-
-//     tissue_mesh.add_face(vd[3], vd[2], vd[1], vd[0]);
-//     tissue_mesh.add_face(vd[4], vd[5], vd[6], vd[7]);
-//     tissue_mesh.add_face(vd[4], vd[7], vd[3], vd[0]);
-//     tissue_mesh.add_face(vd[1], vd[2], vd[6], vd[5]);
-//     tissue_mesh.add_face(vd[0], vd[1], vd[5], vd[4]);
-//     tissue_mesh.add_face(vd[2], vd[3], vd[7], vd[6]);
-
-//     return tissue_mesh;
-
-
-// }
 
 std::vector<Point> &Mytissue::generate_points(int resolution=10)
 {
@@ -183,11 +151,29 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
     std::cout << "max x, y, z: " << intersect_x_max << " " << intersect_y_max << " " << intersect_z_max << std::endl;
     std::cout << "step size: " << step_x << " " << step_y << " " << step_z << std::endl;
     
+    //count the number of loop of x, y, z axis, since OPENMP does not work with double loop
+    int x_loop, y_loop, z_loop;
+    x_loop = ceil(((intersect_x_max + example_d_x / 2) - (intersect_x_min - example_d_x / 2)) / step_x);
+    y_loop = ceil(((intersect_y_max + example_d_y / 2) - (intersect_y_min - example_d_y / 2)) / step_y);
+    z_loop = ceil(((intersect_z_max + example_d_z / 2) - (intersect_z_min - example_d_z / 2)) / step_z);
+    cout << " X_loop: " << x_loop << "-----Y_loop: " << y_loop << "-----Z_loop: " << y_loop << std::endl;
+                    
+    struct timeval start, end;
+    long long microseconds;
+    gettimeofday(&start, nullptr);
+
+    //double c_x, c_y, c_z;
     for (double c_x = intersect_x_min - example_d_x / 2; c_x < intersect_x_max + example_d_x / 2; c_x += step_x)
+        //(int x_count = 0; x_count < x_loop; x_count += 1)
         for (double c_y = intersect_y_min - example_d_y / 2; c_y < intersect_y_max + example_d_y / 2; c_y += step_y)
-            for (double c_z = intersect_z_min - example_d_z / 2; c_z < intersect_z_max + example_d_z / 2; c_z += step_z)
+            //(int y_count = 0; y_count < y_loop; y_count += 1)
+            for(double c_z = intersect_z_min - example_d_z / 2; c_z < intersect_z_max + example_d_z / 2; c_z += step_z)
+                //(int z_count = 0; z_count < z_loop; z_count += 1)
             {
                 // std::cout << c_x << " " << c_y << " " << c_z << std::endl;
+                //c_x = intersect_x_min - example_d_x / 2 + (step_x * x_count);
+                //c_y = intersect_y_min - example_d_y / 2 + (step_y * y_count); 
+                //c_z = intersect_z_min - example_d_z / 2 + (step_z * z_count);
                 Mytissue cur_tissue(c_x, c_y, c_z, example_d_x, example_d_y, example_d_z);
                 
                 bool is_in_corridor = true;
@@ -209,21 +195,24 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
                 if (is_in_corridor)
                 {
                     center_path.push_back(Point(c_x, c_y, c_z));
-                    std::cout << generate_pertubation(step_x) << " " << generate_pertubation(step_y) << " " << generate_pertubation(step_z) << std::endl;
-                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
-                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
-                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
-                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z - example_d_z / 2 + generate_pertubation(step_z)));
-                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
-                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y - example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
-                    point_cloud.push_back(Point(c_x - example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
-                    point_cloud.push_back(Point(c_x + example_d_x / 2 + generate_pertubation(step_x), c_y + example_d_y / 2 + generate_pertubation(step_y), c_z + example_d_z / 2 + generate_pertubation(step_z)));
+                    //std::cout << generate_pertubation(step_x) << " " << generate_pertubation(step_y) << " " << generate_pertubation(step_z) << std::endl;
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 , c_y - example_d_y / 2 , c_z - example_d_z / 2 ));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 , c_y - example_d_y / 2 , c_z - example_d_z / 2 ));
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 , c_y + example_d_y / 2 , c_z - example_d_z / 2 ));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 , c_y + example_d_y / 2 , c_z - example_d_z / 2 ));
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 , c_y - example_d_y / 2 , c_z + example_d_z / 2 ));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 , c_y - example_d_y / 2 , c_z + example_d_z / 2 ));
+                    point_cloud.push_back(Point(c_x - example_d_x / 2 , c_y + example_d_y / 2 , c_z + example_d_z / 2 ));
+                    point_cloud.push_back(Point(c_x + example_d_x / 2 , c_y + example_d_y / 2 , c_z + example_d_z / 2 ));
 
                 }
 
             }
 
-
+    gettimeofday(&end, nullptr);
+    microseconds = (end.tv_sec - start.tv_sec) * 1000000LL + (end.tv_usec - start.tv_usec);
+    // Print the elapsed time
+    std::cout << "---Multithreaded---Time elapsed: " << microseconds << " microseconds" << std::endl;        
     return point_cloud;
 
 }
@@ -391,6 +380,52 @@ double compute_intersection_volume(Mymesh &AS, Mytissue &tissue)
         else if (is_contain_2) percentage = AS.percentage_points_inside(tissue.get_points());
     }
 
+    double volume = percentage * tissue.dimension_x * tissue.dimension_y * tissue.dimension_z;
+    
+    return volume;
+    
+}
+
+
+double compute_intersection_volume_serial(Mymesh &AS, Mytissue &tissue)
+{
+
+    auto aabbtree_AS = AS.get_aabb_tree();
+    auto aabbtree_tissue = tissue.get_aabb_tree();
+
+    double percentage = 0.0;
+    if (aabbtree_AS->do_intersect(*aabbtree_tissue))
+    {
+        //run 1000 times
+        percentage = AS.percentage_points_inside_serial(tissue.get_points());
+    }
+    else
+    {
+        Surface_mesh &tissue_raw_mesh = tissue.get_raw_mesh();       
+        // the tissue block is wholely inside the anatomical structure. 
+        bool is_contain_1 = true;
+        // break for loop
+        for (auto vd: tissue_raw_mesh.vertices())
+        {
+            Point p = tissue_raw_mesh.point(vd);
+            if (!AS.point_inside(p)) is_contain_1 = false;
+            break;
+        }
+
+        // the anatomical structure is wholely inside the tissue block, still use the voxel-based algorithm, can be simplified to use the volume of the anatomical structure. 
+        bool is_contain_2 = true;
+        Surface_mesh &AS_raw_mesh = AS.get_raw_mesh();
+
+        for (auto vd: AS_raw_mesh.vertices())
+        {
+            Point p = AS_raw_mesh.point(vd);
+
+            if (!tissue.point_inside(p)) is_contain_2 = false;
+            break;        
+        }
+        if (is_contain_1) percentage = 1.0;
+        else if (is_contain_2) percentage = AS.percentage_points_inside_serial(tissue.get_points());
+    }
     double volume = percentage * tissue.dimension_x * tissue.dimension_y * tissue.dimension_z;
     
     return volume;
