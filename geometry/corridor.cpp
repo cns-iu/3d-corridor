@@ -47,6 +47,203 @@ std::vector<Point> &Mytissue::generate_points(int resolution=10)
 }
 
 
+
+
+//original tissue block obtained from json file
+OriginTissue::OriginTissue(double c_x, double c_y, double c_z, double d_x, double d_y, double d_z)
+:Mytissue(c_x, c_y, c_z, d_x, d_y, d_z),
+center_x(c_x), center_y(c_y), center_z(c_z), dimension_x(d_x), dimension_y(d_y), dimension_z(d_z)
+{
+
+    create_aabb_tree();
+    generate_points(10);
+
+}
+
+std::vector<Point> &OriginTissue::get_points()
+{
+    return this->points;
+}
+
+//apply translation along x, y and z axes
+void OriginTissue::applyTranslation(double& x, double& y, double& z, double dx, double dy, double dz)
+{
+    x = x + dx;
+    y = y + dy;
+    z = z + dz;
+}
+
+//apply Euler rotation around x, y and z axes
+void OriginTissue::applyEulerRotations(double& x, double& y, double& z, double angleX, double angleY, double angleZ) 
+{
+
+    double radianX = angleX * (M_PI / 180.0);
+    double radianY = angleY * (M_PI / 180.0);
+    double radianZ = angleZ * (M_PI / 180.0);
+
+
+    // Apply x-rotation
+    double tempY = y;
+    y = cos(radianX) * y - sin(radianX) * z;
+    z = sin(radianX) * tempY + cos(radianX) * z;
+
+    // Apply y-rotation
+    double tempX = x;
+    x = cos(radianY) * x + sin(radianY) * z;
+    z = -sin(radianY) * tempX + cos(radianY) * z;
+
+    // Apply z-rotation
+    tempX = x;
+    x = cos(radianZ) * x - sin(radianZ) * y;
+    y = sin(radianZ) * tempX + cos(radianZ) * y;
+
+}
+
+
+// void OriginTissue::setNumOfPoints(int x, int y, int z)
+// {
+//     numOfPoints = x * y * z;
+// }
+
+std::vector<Point> &OriginTissue::generate_points(int resolution=10)
+{   
+    //setNumOfPoints(resolution, resolution, resolution);
+
+    double min_x = center_x - dimension_x/2, min_y = center_y - dimension_y/2, min_z = center_z - dimension_z/2;
+    double max_x = center_x + dimension_x/2, max_y = center_y + dimension_y/2, max_z = center_z + dimension_z/2; 
+    double delta_x = (max_x - min_x) / resolution, delta_y = (max_y - min_y) / resolution, delta_z = (max_z - min_z) / resolution;    
+  
+
+    for (int i = 0; i < resolution; i++)
+        for (int j = 0; j < resolution; j++)
+            for (int k = 0; k < resolution; k++)
+            {
+                double c_x = min_x + (i + 0.5) * delta_x;
+                double c_y = min_y + (j + 0.5) * delta_y;
+                double c_z = min_z + (k + 0.5) * delta_z;
+                
+                //apply translation along x, y and z axes
+                applyTranslation(c_x, c_y, c_z, translate_x, translate_y, translate_z);
+                //apply Euler rotation around x, y and z axes
+                applyEulerRotations(c_x, c_y, c_z, alpha, beta, gamma);    
+
+                Point p(c_x, c_y, c_z);
+                points.push_back(p); 
+            }
+    
+    return points;
+}
+
+void OriginTissue::setTranslationDistanceXYZ(double distance_x, double distance_y, double distance_z)
+{
+    translate_x = distance_x;
+    translate_y = distance_y;
+    translate_z = distance_z;
+}
+
+void OriginTissue::setRotationAngleXYZ(double angle_x, double angle_y, double angle_z)
+{
+    alpha = angle_x; 
+    beta = angle_y; 
+    gamma = angle_z;
+}
+
+
+
+//computer intersection percentage between original tissue block and a list of meshes.
+std::vector<double> compute_intersection_percnt_for_originTissue_meshes(std::vector<Mymesh> &meshes, OriginTissue &originTissueBlock) 
+{
+
+    double tissue_d_x = originTissueBlock.dimension_x;
+    double tissue_d_y = originTissueBlock.dimension_y;
+    double tissue_d_z = originTissueBlock.dimension_z;
+
+    //calculate tissue block volume
+    //double tbv = tissue_d_x * tissue_d_y * tissue_d_z;
+
+    //find MBB for tissue block
+    CGAL::Bbox_3 tissueBBox = PMP::bbox(originTissueBlock.get_raw_mesh());
+
+    std::cout << " test 1 "  << std::endl;
+
+    std::vector<double> intersect_percnt;
+
+    //calculate if the bbox of mesh intersects the bbox of tissue for each mesh.
+    for (int i = 0; i < meshes.size(); i++) {
+
+        std::cout << " test 2 "  << std::endl;
+
+        CGAL::Bbox_3 meshBBox = PMP::bbox(meshes[i].get_raw_mesh());
+
+        std::cout << " test 3 "  << std::endl;
+
+        double lcr1 = meshBBox.xmin();
+        double lcr2 = tissueBBox.xmax();
+        double lcr3 = meshBBox.xmax();
+        double lcr4 = tissueBBox.xmin();
+
+        double lcr11 = meshBBox.ymin();
+        double lcr21 = tissueBBox.ymax();
+        double lcr31 = meshBBox.ymax();
+        double lcr41 = tissueBBox.ymin();
+
+        double lcr111 = meshBBox.zmin();
+        double lcr211 = tissueBBox.zmax();
+        double lcr311 = meshBBox.zmax();
+        double lcr411 = tissueBBox.zmin();
+
+
+
+        std::cout << " test 4 "  << std::endl;
+
+        
+
+        bool intersectX = (meshBBox.xmin() <= tissueBBox.xmax()) && (meshBBox.xmax() >= tissueBBox.xmin());
+        bool intersectY = (meshBBox.ymin() <= tissueBBox.ymax()) && (meshBBox.ymax() >= tissueBBox.ymin());
+        bool intersectZ = (meshBBox.zmin() <= tissueBBox.zmax()) && (meshBBox.zmax() >= tissueBBox.zmin());
+        std::cout << " test 5 "  << std::endl;
+    //     // If there is an intersection along all three axes, the bounding boxes intersect
+        if (intersectX && intersectY && intersectZ) {
+            
+            //calculate intersection percentages
+            //cut tissue block into 1000 small boxes, use center point to represent each small box,
+            //for each center point, check if it is inside certain mesh,
+            //intersection percentage = Number of points inside / total number of points
+
+            double intersection_volume = compute_intersection_volume(meshes[i], originTissueBlock);
+
+            std::cout << " intersection_volume: " << intersection_volume << std::endl;
+            //intersect_percnt[i] = intersection_volume / (tissue_d_x * tissue_d_y * tissue_d_z);
+            std::cout << " test 6 "  << std::endl;
+            intersect_percnt.push_back(intersection_volume / (tissue_d_x * tissue_d_y * tissue_d_z));
+            std::cout << " test 7 "  << std::endl;
+
+        } else {    //BBX do not intersect
+            std::cout << " test 8 "  << std::endl;
+            intersect_percnt.push_back(0);
+            std::cout << " test 9 "  << std::endl;
+        }
+        std::cout << i << std::endl << std::endl;
+    }
+
+    return intersect_percnt;
+}
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
 std::vector<Point> find_all_locations(Mymesh &my_mesh, Mytissue &example_tissue, double intersection_percentage, double tolerance)
 {
 
@@ -143,9 +340,9 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
 
     }
 
-    double step_x = (intersect_x_max - intersect_x_min + example_d_x) / 20.0;
-    double step_y = (intersect_y_max - intersect_y_min + example_d_y) / 20.0;
-    double step_z = (intersect_z_max - intersect_z_min + example_d_z) / 20.0;
+    double step_x = (intersect_x_max - intersect_x_min + example_d_x) / 40.0;
+    double step_y = (intersect_y_max - intersect_y_min + example_d_y) / 40.0;
+    double step_z = (intersect_z_max - intersect_z_min + example_d_z) / 40.0;
 
     std::cout << "min x, y, z: " << intersect_x_min << " " << intersect_y_min << " " << intersect_z_min << std::endl;
     std::cout << "max x, y, z: " << intersect_x_max << " " << intersect_y_max << " " << intersect_z_max << std::endl;
@@ -162,18 +359,20 @@ std::vector<Point> create_point_cloud_corridor_for_multiple_AS(std::vector<Mymes
     long long microseconds;
     gettimeofday(&start, nullptr);
 
+    #pragma omp parallel for schedule(dynamic)
     //double c_x, c_y, c_z;
-    for (double c_x = intersect_x_min - example_d_x / 2; c_x < intersect_x_max + example_d_x / 2; c_x += step_x)
-        //(int x_count = 0; x_count < x_loop; x_count += 1)
-        for (double c_y = intersect_y_min - example_d_y / 2; c_y < intersect_y_max + example_d_y / 2; c_y += step_y)
-            //(int y_count = 0; y_count < y_loop; y_count += 1)
-            for(double c_z = intersect_z_min - example_d_z / 2; c_z < intersect_z_max + example_d_z / 2; c_z += step_z)
-                //(int z_count = 0; z_count < z_loop; z_count += 1)
+    for //(double c_x = intersect_x_min - example_d_x / 2; c_x < intersect_x_max + example_d_x / 2; c_x += step_x)
+        (int x_count = 0; x_count < x_loop; x_count += 1)
+        for //(double c_y = intersect_y_min - example_d_y / 2; c_y < intersect_y_max + example_d_y / 2; c_y += step_y)
+            (int y_count = 0; y_count < y_loop; y_count += 1)
+            for//(double c_z = intersect_z_min - example_d_z / 2; c_z < intersect_z_max + example_d_z / 2; c_z += step_z)
+                (int z_count = 0; z_count < z_loop; z_count += 1)
             {
                 // std::cout << c_x << " " << c_y << " " << c_z << std::endl;
-                //c_x = intersect_x_min - example_d_x / 2 + (step_x * x_count);
-                //c_y = intersect_y_min - example_d_y / 2 + (step_y * y_count); 
-                //c_z = intersect_z_min - example_d_z / 2 + (step_z * z_count);
+                double c_x, c_y, c_z;
+                c_x = intersect_x_min - example_d_x / 2 + (step_x * x_count);
+                c_y = intersect_y_min - example_d_y / 2 + (step_y * y_count); 
+                c_z = intersect_z_min - example_d_z / 2 + (step_z * z_count);
                 Mytissue cur_tissue(c_x, c_y, c_z, example_d_x, example_d_y, example_d_z);
                 
                 bool is_in_corridor = true;
@@ -386,7 +585,7 @@ double compute_intersection_volume(Mymesh &AS, Mytissue &tissue)
     
 }
 
-
+/*
 double compute_intersection_volume_serial(Mymesh &AS, Mytissue &tissue)
 {
 
@@ -430,4 +629,4 @@ double compute_intersection_volume_serial(Mymesh &AS, Mytissue &tissue)
     
     return volume;
     
-}
+}*/

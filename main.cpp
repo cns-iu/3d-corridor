@@ -109,7 +109,7 @@ int main(int argc, char **argv)
     // origin_tissue.setTranslationDistanceXYZ(50.009, 65.904, 60.555);
     // origin_tissue.setRotationAngleXYZ(105, 131, 44);
 
-    // std::cout << " do we get here"  << std::endl;
+    // std::cout << " test"  << std::endl;
 
     // std::vector<double> testPercnt = compute_intersection_percnt_for_originTissue_meshes(meshList, origin_tissue);
 

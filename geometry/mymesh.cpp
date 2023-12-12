@@ -60,7 +60,7 @@ double Mymesh::percentage_points_inside(std::vector<Point> &query)
     int cnt = 0;
     Point_inside inside_tester(*aabbTree);
 
-    #pragma omp parallel for reduction(+:cnt)
+    // #pragma omp parallel for reduction(+:cnt) schedule(dynamic)
     for (auto &point: query)
         if (inside_tester(point) == CGAL::ON_BOUNDED_SIDE) cnt++;
     
